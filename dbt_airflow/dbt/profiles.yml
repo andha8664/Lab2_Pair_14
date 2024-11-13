@@ -3,7 +3,7 @@ default:
   outputs:
     dev:
       type: snowflake
-      account: qwjvams-mxb04729
+      account: "{{ env_var('DBT_ACCOUNT') }}"
       user: "{{ env_var('DBT_USER') }}"
       password: "{{ env_var('DBT_PASSWORD') }}"
       role: ACCOUNTADMIN
