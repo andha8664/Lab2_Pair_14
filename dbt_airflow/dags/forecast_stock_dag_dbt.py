@@ -181,13 +181,6 @@ with DAG(
 ) as dag:
 
     # DBT tasks with fixed command structure
-    dbt_deps = BashOperator(
-        task_id="dbt_deps",
-        bash_command=f"""
-            cd {DBT_PROJECT_DIR} &&
-            dbt deps --profiles-dir {DBT_PROJECT_DIR}
-        """,
-    )
 
     dbt_run_lab1 = BashOperator(
         task_id="dbt_run_lab1",
@@ -227,4 +220,4 @@ with DAG(
     )
 
     # Define task dependencies
-    dbt_deps >> dbt_run_lab1 >> lab1_processing >> dbt_run_forecast >> train_predict_processing
+    dbt_run_lab1 >> lab1_processing >> dbt_run_forecast >> train_predict_processing
