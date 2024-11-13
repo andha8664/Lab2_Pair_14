@@ -1,0 +1,26 @@
+name: 'stock_forecast'
+version: '1.0.0'
+config-version: 2
+
+# Change this line to match profiles.yml
+profile: 'default'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+analysis-paths: ["analyses"]
+macro-paths: ["macros"]
+
+target-path: "target"
+clean-targets:
+    - "target"
+    - "dbt_packages"
+
+models:
+  stock_forecast:
+    lab1:
+      +materialized: table
+      +tags: ["lab1"]
+    forecast:
+      +materialized: table
+      +tags: ["prep_for_training"]
