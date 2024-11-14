@@ -1,0 +1,32 @@
+# dbt_project.yml
+name: 'stock_forecast'
+version: '1.0.0'
+config-version: 2
+profile: 'stock_forecast'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+    - "target"
+    - "dbt_packages"
+    - "logs"
+
+models:
+  stock_forecast:
+    staging:
+      +materialized: view
+      +schema: analytics
+    marts:
+      +materialized: table
+      +schema: analytics
+
+vars:
+  # Add any variables you might need
+  schema_name: 'analytics'
+  raw_data_schema: 'raw_data'
