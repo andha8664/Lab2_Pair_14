@@ -1,0 +1,15 @@
+stock_forecast:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('DBT_ACCOUNT') }}"
+      user: "{{ env_var('DBT_USER') }}"
+      password: "{{ env_var('DBT_PASSWORD') }}"
+      role: ACCOUNTADMIN
+      database: dev
+      warehouse: compute_wh
+      schema: analytics
+      threads: 4
+      client_session_keep_alive: True
+      query_tag: dbt_stock_forecast
