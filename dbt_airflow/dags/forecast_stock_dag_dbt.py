@@ -237,6 +237,21 @@ with DAG(
         """,
     )
 
+    # Define Python Operator tasks to call your functions
+    call_extract_transform_load = PythonOperator(
+        task_id='call_extract_transform_load',
+        python_callable=call_lab1_dag,
+        provide_context=True,
+        dag=dag
+    )
+
+    call_train_predict = PythonOperator(
+        task_id='call_train_predict',
+        python_callable=call_train_predict_dag,
+        provide_context=True,
+        dag=dag
+    )
+
     # Define task dependencies
     (
         find_dbt_directory
@@ -244,4 +259,6 @@ with DAG(
         >> debug_task
         >> dbt_run_lab1
         >> dbt_run_forecast
+        >> call_extract_transform_load
+        >> call_train_predict
     )
