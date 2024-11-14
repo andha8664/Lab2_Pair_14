@@ -211,30 +211,60 @@ with DAG(
     )
 
     # Tasks for running DBT
-    dbt_run_lab1 = BashOperator(
-        task_id="dbt_run_lab1",
+    dbt_deps = BashOperator(
+    task_id="dbt_deps",
+    bash_command=f"""
+        DBT_PROJECT_DIR=$(cat /tmp/dbt_project_dir) &&
+        export DBT_ACCOUNT='{Variable.get("DBT_ACCOUNT")}' &&
+        export DBT_USER='{Variable.get("DBT_USER")}' &&
+        export DBT_PASSWORD='{Variable.get("DBT_PASSWORD")}' &&
+        cd $DBT_PROJECT_DIR &&
+        dbt deps --profiles-dir $DBT_PROJECT_DIR || echo "DBT deps failed with exit code $?"
+    """,
+    retries=2,
+    retry_delay=timedelta(minutes=5),
+    )
+
+    dbt_run = BashOperator(
+        task_id="dbt_run",
         bash_command=f"""
             DBT_PROJECT_DIR=$(cat /tmp/dbt_project_dir) &&
             export DBT_ACCOUNT='{Variable.get("DBT_ACCOUNT")}' &&
             export DBT_USER='{Variable.get("DBT_USER")}' &&
             export DBT_PASSWORD='{Variable.get("DBT_PASSWORD")}' &&
             cd $DBT_PROJECT_DIR &&
-            dbt run --profiles-dir $DBT_PROJECT_DIR --select tag:lab1 --full-refresh || echo "DBT run failed with exit code $?"
+            dbt run --profiles-dir $DBT_PROJECT_DIR --full-refresh || echo "DBT run failed with exit code $?"
         """,
         retries=3,
         retry_delay=timedelta(minutes=5),
     )
 
-    dbt_run_forecast = BashOperator(
-        task_id="dbt_run_forecast",
+    dbt_test = BashOperator(
+        task_id="dbt_test",
         bash_command=f"""
             DBT_PROJECT_DIR=$(cat /tmp/dbt_project_dir) &&
             export DBT_ACCOUNT='{Variable.get("DBT_ACCOUNT")}' &&
             export DBT_USER='{Variable.get("DBT_USER")}' &&
             export DBT_PASSWORD='{Variable.get("DBT_PASSWORD")}' &&
             cd $DBT_PROJECT_DIR &&
-            dbt run --profiles-dir $DBT_PROJECT_DIR --select tag:prep_for_training --full-refresh || echo "DBT run failed with exit code $?"
+            dbt test --profiles-dir $DBT_PROJECT_DIR || echo "DBT test failed with exit code $?"
         """,
+        retries=2,
+        retry_delay=timedelta(minutes=5),
+    )
+
+    dbt_snapshot = BashOperator(
+        task_id="dbt_snapshot",
+        bash_command=f"""
+            DBT_PROJECT_DIR=$(cat /tmp/dbt_project_dir) &&
+            export DBT_ACCOUNT='{Variable.get("DBT_ACCOUNT")}' &&
+            export DBT_USER='{Variable.get("DBT_USER")}' &&
+            export DBT_PASSWORD='{Variable.get("DBT_PASSWORD")}' &&
+            cd $DBT_PROJECT_DIR &&
+            dbt snapshot --profiles-dir $DBT_PROJECT_DIR || echo "DBT snapshot failed with exit code $?"
+        """,
+        retries=2,
+        retry_delay=timedelta(minutes=5),
     )
 
     # Define Python Operator tasks to call your functions
@@ -251,14 +281,16 @@ with DAG(
         provide_context=True,
         dag=dag
     )
-
-    # Define task dependencies
+    
+    # Update your task dependencies to include the new tasks
     (
         find_dbt_directory
         >> set_dbt_directory
         >> debug_task
-        >> dbt_run_lab1
-        >> dbt_run_forecast
+        >> dbt_deps
+        >> dbt_run
+        >> dbt_test
+        >> dbt_snapshot
         >> call_extract_transform_load
         >> call_train_predict
     )
